@@ -35,7 +35,7 @@ int main(int argc, const char* argv[])
 {
 	Mat haystack = imread("zflc.png", 0);
 
-	Model zfl("model/zfl.txt");
+	Model zfl("zfl/model.txt");
 
 	Mat disp = haystack.clone();
 

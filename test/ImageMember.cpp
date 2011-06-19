@@ -13,10 +13,19 @@ ImageMember::ImageMember(const string path, vector<string>& args)
 	delta_theta_ = atof(args[1].c_str());
 
 	image = imread(path + "/" + filename, 0);
+
+	buildCache();
 }
 
 ImageMember::~ImageMember(void)
 {
+}
+
+void ImageMember::buildCache()
+{
+	for (double theta = 0; theta < 360; theta += delta_theta_) {
+		getRotatedImage(theta);
+	}
 }
 
 double ImageMember::energy(Mat& haystack, Position& p)
@@ -36,7 +45,9 @@ map<double, Mat> ImageMember::energyField(cv::Mat& haystack)
 	map<double, Mat> energy_field;
 
 	for (double theta = 0; theta < 360; theta += delta_theta_) {
+		tic();
 		matchTemplate(haystack, getRotatedImage(theta), energy_field[theta], CV_TM_CCOEFF_NORMED);
+		toc();
 	}
 
 	return energy_field;
@@ -65,6 +76,38 @@ Position ImageMember::bestPosition(Mat& haystack)
 	}
 
 	return Position(bestPoint.x, bestPoint.y, bestTheta);
+}
+
+map<double, Position> ImageMember::bestPositions(Mat& haystack, int n_best)
+{
+	// TODO use heap with push_heap
+	// don't forget we are rtying to minimize the energy
+
+	map<double, Position> best_positions;
+
+	map<double, Mat> energy_field = energyField(haystack);
+
+	for (map<double, Mat>::iterator it = energy_field.begin(); it != energy_field.end(); ++it) {
+		map<double, Point> local_best_positions;
+
+		Mat& energy = it->second;
+		Mat& feature = rotation_cache_[it->first];
+
+		MatIterator_<float> mit = energy.begin<float>();
+		MatIterator_<float> mit_end = energy.end<float>();
+		for(; mit != mit_end; ++it) {
+			local_best_positions[(double) *mit] = mit.pos();
+		}
+		
+		map<double, Point>::iterator lit = local_best_positions.end();
+		map<double, Point>::iterator lit_begin = local_best_positions.begin();
+		int n = 0;
+		for(; lit != lit_begin && n < n_best; --lit, ++n) {
+			best_positions[lit->first] = Position(lit->second, it->first);
+		}
+	}
+
+	return best_positions;
 }
 
 Mat& ImageMember::getRotatedImage(double angle)

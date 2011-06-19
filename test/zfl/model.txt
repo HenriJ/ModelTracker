@@ -1,0 +1,7 @@
+# Define the members
+Member  Image   head    head.png    36
+Member  Image   trunk   trunk.png   36
+Member  Image   taila1  tail_a.png  36
+# Define the links
+Link  Spring   head  trunk  77  1
+Link  Angle    head  trunk  0   1

@@ -16,6 +16,13 @@ Position::Position(int _x, int _y, double _r)
 	r = _r;
 }
 
+Position(Point p, double _r)
+{
+	x = p.x;
+	y = p.y;
+	r = _r;
+}
+
 Position::~Position(void)
 {
 }
