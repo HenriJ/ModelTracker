@@ -1,0 +1,5 @@
+*.exe
+*.sdf
+Debug
+ipch
+*.avi
